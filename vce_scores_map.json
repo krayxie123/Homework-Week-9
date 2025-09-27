@@ -1,76 +1,69 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "title": "Victorian Schools - Median VCE Study Scores",
-  "width": 600,
-  "height": 700,
+  "title": "Average VCE Study Scores by Suburb (2024) - Choropleth Map",
+  "width": 1600,
+  "height": 1000,
   "projection": {"type": "mercator"},
   "layer": [
     {
       "data": {
-        "url": "https://raw.githubusercontent.com/krayxie123/Week4-studio/main/js/vicsuburbsgood.topojson",
-        "format": {"type": "topojson", "feature": "Vicsubs.topojson"}
+        "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
+        "format": {"type": "topojson", "feature": "vicsuburbsgood"}
       },
-      "mark": {"type": "geoshape", "fill": "#f5f5f5", "stroke": "#ccc", "strokeWidth": 0.5}
+      "mark": {
+        "type": "geoshape",
+        "fill": "#f5f5f5",
+        "stroke": "#ccc",
+        "strokeWidth": 1
+      }
     },
     {
       "data": {
-        "url": "https://raw.githubusercontent.com/krayxie123/Week4-studio/main/data/dv402-SchoolLocations2025.csv"
+        "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
+        "format": {"type": "topojson", "feature": "vicsuburbsgood"}
       },
       "transform": [
         {
-          "lookup": "School_Name",
+          "lookup": "properties.vic_loca_2",
           "from": {
-            "data": {"url": "https://raw.githubusercontent.com/krayxie123/Week4-studio/main/data/VCE 2024 Results.csv"},
-            "key": "School",
-            "fields": ["Median VCE study score"]
+            "data": {"url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/refs/heads/main/data/suburb_study_scores_complete.csv"},
+            "key": "suburb",
+            "fields": ["avg_study_score", "school_count"]
           }
         },
         {
-          "filter": "datum['Median VCE study score'] != null && datum['Median VCE study score'] != 'I/D' && datum['Median VCE study score'] != '-' && datum['Median VCE study score'] != ''"
-        },
-        {
-          "calculate": "parseFloat(datum['Median VCE study score'])",
-          "as": "median_score"
+          "calculate": "datum.avg_study_score != null && datum.avg_study_score != '' ? parseFloat(datum.avg_study_score) : null",
+          "as": "study_score_with_offset"
         }
       ],
       "mark": {
-        "type": "circle",
-        "size": 100,
-        "opacity": 0.8,
+        "type": "geoshape",
         "stroke": "white",
-        "strokeWidth": 1
+        "strokeWidth": 0.5
       },
       "encoding": {
-        "longitude": {"field": "X", "type": "quantitative"},
-        "latitude": {"field": "Y", "type": "quantitative"},
         "color": {
-          "field": "median_score",
+          "field": "study_score_with_offset",
           "type": "quantitative",
+          "title": "Average Study Score",
           "scale": {
-            "domain": [20, 40],
-            "range": ["#fee5d9", "#fc9272", "#de2d26"],
+            "domain": [0.1, 37],
+            "range": ["#fee5d9", "#a50f15"],
             "scheme": "reds"
           },
           "legend": {
-            "title": "Median VCE Score",
+            "title": "Average Study Score",
             "orient": "bottom"
+          },
+          "condition": {
+            "test": "datum.study_score_with_offset == null",
+            "value": "#d3d3d3"
           }
         },
-        "size": {
-          "field": "median_score",
-          "type": "quantitative",
-          "scale": {
-            "domain": [20, 40],
-            "range": [50, 200]
-          },
-          "legend": null
-        },
         "tooltip": [
-          {"field": "School_Name", "type": "nominal", "title": "School"},
-          {"field": "Address_Town", "type": "nominal", "title": "Town"},
-          {"field": "Median VCE study score", "type": "quantitative", "title": "Median Study Score", "format": ".1f"},
-          {"field": "Education_Sector", "type": "nominal", "title": "Sector"},
-          {"field": "LGA_TYPE", "type": "nominal", "title": "Area Type"}
+          {"field": "properties.vic_loca_2", "type": "nominal", "title": "Suburb"},
+          {"field": "avg_study_score", "type": "quantitative", "title": "Avg Study Score", "format": ".1f"},
+          {"field": "school_count", "type": "quantitative", "title": "Schools"}
         ]
       }
     }
