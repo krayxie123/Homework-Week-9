@@ -1,64 +1,61 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "title": "Average VCE Study Scores by Suburb (2024) - Choropleth Map",
-  "width": 1600,
-  "height": 1000,
+  "title": {
+    "text": "Median VCE Study Scores by Locality",
+    "fontSize": 50,
+    "fontWeight": "bold"
+  },
+  "width": 2000,
+  "height":2000,
   "projection": {
     "type": "mercator",
     "center": [145, -37],
-    "scale": 19000
+    "scale": 10000
+  },
+  "data": {
+    "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
+    "format": {"type": "topojson", "feature": "Vicsubs.topojson"}
   },
   "layer": [
     {
-      "data": {"sphere": true},
-      "mark": {"type": "geoshape", "fill": "#ffffff", "stroke": "#ccc", "strokeWidth": 0.5}
+      "mark": {"type": "geoshape", "fill": "lightgray", "stroke": "white"},
+      "encoding": {
+        "tooltip": {
+          "field": "note"
+        }
+      }
     },
     {
-      "data": {
-        "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
-        "format": {"type": "topojson", "feature": "Vicsubs.topojson"}
-      },
-      "mark": {"type": "geoshape", "fill": "#f5f5f5", "stroke": "#ccc", "strokeWidth": 1}
-    },
-    {
-      "data": {
-        "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
-        "format": {"type": "topojson", "feature": "Vicsubs.topojson"}
-      },
       "transform": [
         {
           "lookup": "properties.vic_loca_2",
           "from": {
             "data": {
-              "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/refs/heads/main/data/suburb_study_scores_joined.csv"
+              "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/data/VCE 2024 Results.csv"
             },
-            "key": "suburb",
-            "fields": ["avg_study_score", "school_count"]
+            "key": "Locality",
+            "fields": ["Median VCE study score", "School"]
           }
         },
         {
-          "calculate": "datum.avg_study_score != null ? datum.avg_study_score : 10",
-          "as": "study_score_with_offset"
+          "calculate": "datum['Median VCE study score'] != null && datum['Median VCE study score'] != 'I/D' && datum['Median VCE study score'] != '' ? parseFloat(datum['Median VCE study score']) : 0",
+          "as": "study_score"
         }
       ],
-      "mark": {"type": "geoshape", "stroke": "white", "strokeWidth": 0.5},
+      "mark": {"type": "geoshape", "stroke": "white"},
       "encoding": {
         "color": {
-          "field": "study_score_with_offset",
+          "field": "study_score",
           "type": "quantitative",
-          "title": "Average Study Score",
           "scale": {
-            "domain": [0, 37],
-            "range": ["#fee5d9", "#fc9272", "#de2d26"],
-            "scheme": "reds"
-          },
-          "legend": {"orient": "bottom"},
-          "nullColor": "#ffa500"
+            "domain": [0, 20, 25, 30, 35, 40, 45, 50],
+            "range": ["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]
+          }
         },
         "tooltip": [
-          {"field": "properties.vic_loca_2", "type": "nominal", "title": "Suburb"},
-          {"field": "avg_study_score", "type": "quantitative", "title": "Avg Study Score", "format": ".1f"},
-          {"field": "school_count", "type": "quantitative", "title": "Schools"}
+          {"field": "properties.vic_loca_2", "type": "nominal", "title": "Locality"},
+          {"field": "study_score", "type": "quantitative", "title": "Median Study Score", "format": ".1f"},
+          {"field": "School", "type": "nominal", "title": "School"}
         ]
       }
     },
