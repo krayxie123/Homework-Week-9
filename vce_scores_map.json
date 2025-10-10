@@ -2,15 +2,54 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": {
     "text": "Median VCE Study Scores by Locality",
-    "fontSize": 30,
+    "fontSize": 50,
     "fontWeight": "bold"
   },
-  "width": 800,
-  "height":600,
+  "width": 700,
+  "height": 500,
+  "params": [
+    {
+      "name": "zoom_level",
+      "value": 20000,
+      "bind": {
+        "input": "range",
+        "min": 20000,
+        "max": 50000,
+        "step": 100,
+        "name": "Zoom: "
+      }
+    },
+    {
+      "name": "center_to",
+      "value": [145, -37.7],
+      "bind": {
+        "input": "select",
+        "options": [
+          [145, -37],
+          [144.3, -38.1],
+          [144.9, -36.7],
+          [147.1, -38.1]
+        ],
+        "labels": ["Melbourne CBD", "Geelong", "Bendigo", "Sale"],
+        "name": "Map Centre: "
+      }
+    },
+    {
+      "name": "score_threshold",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 50,
+        "step": 1,
+        "name": "Study Score Threshold: "
+      }
+    }
+  ],
   "projection": {
-    "type": "mercator",
-    "center": [145, -37],
-    "scale": 4500
+    "type": "equirectangular",
+    "center": {"expr": "center_to"},
+    "scale": {"expr": "zoom_level"}
   },
   "data": {
     "url": "https://raw.githubusercontent.com/krayxie123/Homework-Week-9/main/vicsuburbsgood.topojson",
@@ -40,6 +79,13 @@
         {
           "calculate": "datum['Median VCE study score'] != null && datum['Median VCE study score'] != 'I/D' && datum['Median VCE study score'] != '' ? parseFloat(datum['Median VCE study score']) : 0",
           "as": "study_score"
+        },
+        {
+          "calculate": "datum.School == null || datum.School == '' ? 'No schools in the suburb' : datum.School",
+          "as": "school_display"
+        },
+        {
+          "filter": "score_threshold == 0 ? true : datum.study_score >= score_threshold"
         }
       ],
       "mark": {"type": "geoshape", "stroke": "white"},
@@ -48,14 +94,19 @@
           "field": "study_score",
           "type": "quantitative",
           "scale": {
-            "domain": [0, 20, 25, 30, 35, 40, 45, 50],
+            "domain": [0, 10, 20, 30, 40,  50],
             "range": ["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]
+          },
+          "legend": {
+            "title": "Median VCE Study Score",
+            "orient": "bottom",
+            "direction": "horizontal"
           }
         },
         "tooltip": [
           {"field": "properties.vic_loca_2", "type": "nominal", "title": "Locality"},
           {"field": "study_score", "type": "quantitative", "title": "Median Study Score", "format": ".1f"},
-          {"field": "School", "type": "nominal", "title": "School"}
+          {"field": "school_display", "type": "nominal", "title": "School"}
         ]
       }
     },
